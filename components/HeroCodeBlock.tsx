@@ -12,6 +12,46 @@ import { CSS_LIB_NAMES, DEFAULT_CSS_LIB } from '@lib/constants';
 import { Select } from '@components/Select';
 import { ScrollArea } from '@components/ScrollArea';
 import type { CssLib } from '@lib/constants';
+import {
+  SandpackProvider,
+  SandpackLayout,
+  SandpackCodeEditor,
+  SandpackPreview,
+} from '@codesandbox/sandpack-react';
+
+const globalCssCode = `* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui;
+  width: 100%;
+  min-height: 100vh;
+  background-image: linear-gradient(330deg, hsl(272, 53%, 50%) 0%, hsl(226, 68%, 56%) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  // margin-top: 100px;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+svg {
+  display: block;
+}
+`;
+
+const indexCode = `import { createRoot } from 'react-dom/client';
+import App from './App';
+import './global.css';
+
+const container = document.getElementById('root');
+const root = createRoot(container);
+
+root.render(<App />);`;
 
 export const HeroCodeBlock = ({
   children,
@@ -57,7 +97,40 @@ export const HeroCodeBlock = ({
       data-algolia-exclude
       css={{ position: 'relative', '@bp3': { mx: '-$7' }, '@bp4': { mx: '-$8' } }}
     >
-      <Collapsible.Root open={isCodeExpanded} onOpenChange={setIsCodeExpanded}>
+      <SandpackProvider
+        template="react"
+        customSetup={{
+          dependencies: {
+            '@radix-ui/react-accordion': 'latest',
+            '@radix-ui/react-icons': 'latest',
+            '@radix-ui/colors': 'latest',
+            classnames: 'latest',
+          },
+        }}
+        options={{
+          visibleFiles: ['/App.js', '/styles.css'],
+        }}
+        files={{
+          '/global.css': globalCssCode,
+          '/index.js': indexCode,
+          '/App.js': sources['index.jsx'],
+          '/styles.css': sources['styles.css'],
+        }}
+      >
+        <SandpackLayout style={{ display: 'grid', gridTemplateColumns: 'repeat(1,1fr)' }}>
+          <SandpackPreview showRefreshButton={false} style={{ height: 400, overflow: 'hidden' }} />
+          <ScrollArea
+            css={{
+              borderBottomLeftRadius: '$3',
+              borderBottomRightRadius: '$3',
+              maxHeight: '80vh',
+            }}
+          >
+            <SandpackCodeEditor />
+          </ScrollArea>
+        </SandpackLayout>
+      </SandpackProvider>
+      {/* <Collapsible.Root open={isCodeExpanded} onOpenChange={setIsCodeExpanded}>
         <Box
           css={{
             position: 'absolute',
@@ -269,7 +342,7 @@ export const HeroCodeBlock = ({
             </Flex>
           </Box>
         </Collapsible.Content>
-      </Collapsible.Root>
+      </Collapsible.Root> */}
     </Box>
   );
 };
